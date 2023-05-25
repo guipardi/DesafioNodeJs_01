@@ -25,7 +25,9 @@ export class Database {
     if (search) {
       data = data.filter(row => {
         return Object.entries(search).some(([key, value]) => {
-          return row[key].toLowerCase().include(value.toLowerCase())
+          if (!value) return true
+
+          return row[key].includes(value)
         })
       })
     }
@@ -33,5 +35,33 @@ export class Database {
     return data
   }
 
-  
+  insert(table, data) {
+    if (Array.isArray(this.#database[table])) {
+      this.#database[table].push(data)
+    } else {
+      this.#database[table] = [data]
+    }
+
+    this.#persist()
+
+    return data
+  }
+
+  update(table, id, data) {
+    const rowIndex = this.#database[table].findIndex(row => row.id === id)
+
+    if (rowIndex > -1) {
+      this.#database[table][rowIndex] = { id, ...data }
+      this.#persist()
+    }
+  }
+
+  delete(table, id) {
+    const rowIndex = this.#database[table].findIndex(row => row.id === id)
+
+    if (rowIndex > -1) {
+      this.#database[table].splice(rowIndex, 1)
+      this.#persist()
+    }
+  }
 }
