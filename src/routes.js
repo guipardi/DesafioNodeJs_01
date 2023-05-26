@@ -49,11 +49,49 @@ export const routes = [
   },
   {
     method: 'PUT',
-    path: '/tasks/:id',
+    path: buildRoutePath('/tasks/:id'),
+    handler: (req, res) => {
+      const { id } = req.params
+      const { title, description } = req.body
+
+      if (!title || !description) {
+        return res.writeHead(400).end(
+          JSON.stringify({message: 'Title and description are required!'})
+        )
+      }
+
+      const [task] = database.select('tasks', {id})
+
+      if (!task) {
+        return res.writeHead(400).end()
+      }
+
+      database.update('tasks', id, {
+        title,
+        description,
+        ...task,
+        updated_at: new Date() 
+      })
+
+      return res.writeHead(204).end()
+    }
   },
   {
     method: 'DELETE',
-    path: '/tasks/:id',
+    path: buildRoutePath('/tasks/:id'),
+    handler: (req, res) => {
+      const { id } = req.params
+
+      const [task] = database.select('tasks', {id})
+
+      if (!task) {
+        return res.writeHead(400).end()
+      }
+
+      database.delete('tasks', id)
+
+      return res.writeHead(204).end(`Usuário de id ${id}, deletado com sucesso!`)
+    }
   },
   {
     method: 'PATCH',
