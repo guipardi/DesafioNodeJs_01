@@ -95,6 +95,25 @@ export const routes = [
   },
   {
     method: 'PATCH',
-    path: '/tasks/:id/complete',
+    path: buildRoutePath('/tasks/:id/complete'),
+    handler: (req, res) => {
+      const { id } = req.params
+
+      const [task] = database.select('tasks', {id})
+
+      if(!task) {
+        return res.writeHead(400).end()
+      }
+
+      const isTaskCompleted = !!task.completed_at
+      const completed_at = isTaskCompleted ? null : new Date()
+
+      database.update('tasks', id, {
+        ...task,
+        completed_at
+      })
+
+      return res.writeHead(204).end(`Tarefa ${task.description} marcada como completa: ${completed_at}`)
+    }
   }
 ]
